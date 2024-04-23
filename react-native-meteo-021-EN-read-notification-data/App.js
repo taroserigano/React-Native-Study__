@@ -37,6 +37,8 @@ export default function App() {
   });
 
   useEffect(() => {
+    
+    // subscribe on inital loading 
     subscribeToNotifications();
     // App is in background or killed and then the notification is pressed
     Notifications.addNotificationResponseReceivedListener((response) => {
@@ -64,7 +66,10 @@ export default function App() {
 
   async function subscribeToNotifications() {
     let token;
+    
     if (Platform.OS === "android") {
+      // kinda default set up for notification 
+      // adding typical vibration as well 
       await Notifications.setNotificationChannelAsync("default", {
         name: "default",
         importance: Notifications.AndroidImportance.MAX,
@@ -72,9 +77,15 @@ export default function App() {
         lightColor: "#FF231F7C",
       });
     }
+
+    // if this is a real physical device, 
     if (Device.isDevice) {
+
+      // get permission from the User 
       const { status: existingStatus } =
         await Notifications.getPermissionsAsync();
+
+      // if no permission yet, 
       if (existingStatus !== "granted") {
         const { status } = await Notifications.requestPermissionsAsync();
         if (status !== "granted") {
@@ -82,7 +93,10 @@ export default function App() {
           return;
         }
       }
+
+      // token 
       token = (
+        // this will extract the token  
         await Notifications.getExpoPushTokenAsync({
           projectId: Constants.expoConfig.extra.projectId,
         })
@@ -96,6 +110,7 @@ export default function App() {
     return token;
   }
 
+  
   async function fetchWeatherByCoords(coords) {
     const weatherResponse = await MeteoAPI.fetchWeatherByCoords(coords);
     setWeather(weatherResponse);
